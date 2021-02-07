@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        var from = null, start = 0, url = 'http://localhost/chat.php';
+        $(document).ready(function(){
+            from = prompt("Please enter your Name:");
+            load();
+            $('form').submit(function(e) {
+                $.post(url, {
+                    message: $('#message').val(),
+                    from: from
+                });
+                $('#message').val('');
+                return false;
+            })
+        });
+
+        function load() {
+            $.get(url + '?start=' + start, function(result){
+                if (result.items) {
+                    result.items.forEach(item =>{
+                        start = item.id;
+                        $('#messages').append(renderMessage(item));
+                    });
+                    $('#messages').animate({scrollTop: $('#messages')[0].scrollHeight});
+                };
+                load();
+            });
+        }
+
+        function renderMessage(item){
+            let time = new Date(item.created);
+            time = `${time.getHours()}:${time.getMinutes()}`
+            return `<div class="msg"><p>${item.from}</p>${item.message}<span>${time}</span></div>`;
+        }
+    </script>
+    <title>ChatApp</title>
+</head>
+<style>
+    body{
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+    #messages{
+        height: 88vh;
+        overflow-x: hidden;
+        padding: 10px;
+        background-image: url(chat.jpg);
+    }
+    form{
+        display: flex;
+    }
+    input{
+        font-size: 1.2rem;
+        padding: 10px;
+        margin: 10px 5px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid black;
+        border-radius: 4px;
+    }
+    #message{
+        flex: 2;
+    }
+    .msg{
+        background-color: yellow;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        width: fit-content;
+    }
+    .msg p{
+        margin: 0;
+        font-weight: bold;
+    }
+    span{
+        font-size: 0.7rem;
+        margin-left: 15px;
+    }
+    #send{
+        cursor: pointer;
+    }
+</style>
+<body>
+    <div id="messages"></div>
+    <form action="">
+        <input type="text" id="message" autocomplete="off" autofocus placeholder="Type a message...">
+        <input type="submit" id="send" value="send">
+    </form>
+</body>
+</html>
